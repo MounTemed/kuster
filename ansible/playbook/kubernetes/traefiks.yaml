@@ -1,0 +1,33 @@
+- name: Disable Traefik
+  hosts: servers
+  become: true
+  vars:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+    - name: Delete YAML file
+      ansible.builtin.file:
+        path: /var/lib/rancher/k3s/server/manifests/traefik.yaml
+        state: absent
+
+    - name: Uninstall traefik chart
+      kubernetes.core.helm:
+        kubeconfig: "{{ kubeconfig }}"
+        name: traefik
+        state: absent
+        namespace: kube-system
+        wait: true
+
+    - name: Uninstall traefik-crd chart
+      kubernetes.core.helm:
+        kubeconfig: "{{ kubeconfig }}"
+        name: traefik-crd
+        state: absent
+        namespace: kube-system
+        wait: true
+
+    - name: Restart systemd service k3s
+      ansible.builtin.systemd:
+        name: k3s
+        state: restarted
+        daemon_reload: true

@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: luneapp
+  labels:
+    app: app
+spec:
+  selector:
+    matchLabels:
+      app: app
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      imagePullSecrets:
+        - name: docker-hub-secret
+      containers:
+        - name: app
+          image: docker.io/laimick/luneapp:latest
+          ports:
+            - containerPort: 8080

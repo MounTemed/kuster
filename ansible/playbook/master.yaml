@@ -1,0 +1,51 @@
+- name: Upgrade system
+  ansible.builtin.import_playbook: ./upgrade/install.yaml
+  tags: ["upgrade"]
+
+- name: Install podman
+  ansible.builtin.import_playbook: ./pkgs/podman.yaml
+  tags: ["packages"]
+
+- name: Setting up a new user
+  ansible.builtin.import_playbook: ./security/user.yaml
+  tags: ["security"]
+
+- name: Firewalld security setup
+  ansible.builtin.import_playbook: ./security/firewalld.yaml
+  tags: ["security"]
+
+- name: Installing Kubernetes
+  ansible.builtin.import_playbook: ./kubernetes/install.yaml
+  tags: ["kubernetes"]
+
+- name: Getting configuration for kubectl
+  ansible.builtin.import_playbook: ./kubernetes/config.yaml
+  tags: ["kubernetes"]
+
+- name: Installing helm
+  ansible.builtin.import_playbook: ./helm/install.yaml
+  tags: ["kubernetes"]
+
+- name: Delete trafik
+  ansible.builtin.import_playbook: ./kubernetes/traefiks.yaml
+  tags: ["kubernetes"]
+
+- name: Installing ingress-nginx
+  ansible.builtin.import_playbook: ./helm/ingress-nginx.yaml
+  tags: ["kubernetes"]
+
+- name: Setting up k8s for work
+  ansible.builtin.import_playbook: ./kubernetes/create.yaml
+  tags: ["kubernetes"]
+
+- name: Install secret docker
+  ansible.builtin.import_playbook: ./kubernetes/secret.yaml
+  tags: ["kubernetes"]
+
+- name: Installing ArgoCD
+  ansible.builtin.import_playbook: ./argo/install.yaml
+  tags: ["cd"]
+
+- name: Start ArgoCD
+  ansible.builtin.import_playbook: ./argo/manifest.yaml
+  tags: ["cd"]

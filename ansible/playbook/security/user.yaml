@@ -1,0 +1,10 @@
+- name: Creating a new user and its folder
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Create a new user
+      ansible.builtin.user:
+        name: lune
+        create_home: true
+        shell: /bin/bash

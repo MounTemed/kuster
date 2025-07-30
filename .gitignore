@@ -1,0 +1,3 @@
+ansible/playbook/kubernetes/secret.yaml
+debug/config-develop
+ansible/hosts/inventory.yaml

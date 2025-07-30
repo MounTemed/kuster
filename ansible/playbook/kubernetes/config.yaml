@@ -1,0 +1,10 @@
+- name: We receive the required file
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Loading config from vps to our machine
+      ansible.builtin.fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ playbook_dir }}/../../../debug/config-{{ inventory_hostname }}"
+        flat: true

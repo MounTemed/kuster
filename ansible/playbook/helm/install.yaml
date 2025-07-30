@@ -1,0 +1,34 @@
+- name: Installing helm
+  hosts: servers
+  become: true
+  vars:
+    pathLune: /home/lune
+
+  tasks:
+    - name: Download the helm installer
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        dest: "{{ pathLune }}/"
+        mode: 700
+
+    - name: Installing dependencies
+      ansible.builtin.dnf:
+        name:
+          - tar
+          - git
+          - python3-pip
+        state: latest
+
+    - name: Install Kubernetes python library using pip
+      ansible.builtin.pip:
+        name: kubernetes
+        state: present
+
+    - name: Install helm using the installer
+      ansible.builtin.command:
+        cmd: "{{ pathLune }}/get-helm-3"
+
+    - name: Deleting a file that is no longer needed
+      ansible.builtin.file:
+        path: "{{ pathLune }}/get_helm-3"
+        state: absent

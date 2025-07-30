@@ -1,0 +1,9 @@
+- name: Installing podman packages
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Install podman
+      ansible.builtin.dnf:
+        name: podman
+        state: latest

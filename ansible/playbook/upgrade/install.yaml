@@ -1,0 +1,20 @@
+- name: Install latest packages
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Upgrade all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+
+    - name: Reboot cloud
+      ansible.builtin.reboot:
+        reboot_timeout: 3600
+        msg: "Rebooting machine in 5 seconds"
+
+    - name: Wait for the server restart
+      ansible.builtin.wait_for:
+        port: 22
+        delay: 10
+        timeout: 300

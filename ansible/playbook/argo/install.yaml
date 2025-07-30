@@ -1,0 +1,55 @@
+- name: Complete installation of ArgoCD
+  hosts: servers
+  become: true
+  vars:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+    - name: Download metrics-server manifest to the cluster
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        dest: /home/lune/
+        mode: "0644"
+
+    - name: Apply metrics-server manifest to the cluster
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        src: /home/lune/install.yaml
+        namespace: argocd
+
+    - name: Install argoCD CLI
+      ansible.builtin.shell: |
+        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 && \
+        sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd && \
+        rm argocd-linux-amd64
+
+    - name: Change the service type of argoCD server to LoadBalancer
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: patched
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: argocd-server
+            namespace: argocd
+          spec:
+            type: LoadBalancer
+
+    - name: Pause for 10 seconds to build argocd
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: fix for redis pull
+      ansible.builtin.shell: |
+        kubectl patch deployment argocd-redis -n argocd -p '{"spec":{"template":{"spec":{"imagePullSecrets": [{"name": "docker-hub-secret"}]}}}}'
+
+    - name: Get ArgoCD initial admin password
+      ansible.builtin.shell: argocd admin initial-password -n argocd --kubeconfig="{{ kubeconfig }}"
+      register: argocd_password
+      changed_when: false
+
+    - name: Display ArgoCD initial admin password
+      ansible.builtin.debug:
+        msg: "ArgoCD initial admin password is: {{ argocd_password.stdout }}"

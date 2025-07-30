@@ -1,0 +1,67 @@
+- name: Full firewalld setup
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Installing firewalld
+      ansible.builtin.dnf:
+        name: firewalld
+        state: latest
+
+    - name: Permit traffic in default zone for https service
+      ansible.posix.firewalld:
+        service: https
+        permanent: true
+        state: enabled
+
+    - name: Allow traffic on port 8081 (ArgoCD UI)
+      ansible.posix.firewalld:
+        port: 8081/tcp
+        permanent: true
+        state: enabled
+
+    - name: Allow traffic on port 80 (HTTP, иногда используется K8s Dashboard)
+      ansible.posix.firewalld:
+        port: 80/tcp
+        permanent: true
+        state: enabled
+
+    - name: Allow traffic on port 443
+      ansible.posix.firewalld:
+        port: 443/tcp
+        permanent: true
+        state: enabled
+
+    - name: Allowing traffic for port 22 (SSH)
+      ansible.posix.firewalld:
+        port: 22/tcp
+        permanent: true
+        state: enabled
+
+    - name: Create a new zone named 'kube'
+      ansible.posix.firewalld:
+        zone: kube
+        permanent: true
+        state: present
+
+    - name: Add ports to the 'kube' zone
+      ansible.posix.firewalld:
+        zone: kube
+        port: "{{ item }}/tcp"
+        permanent: true
+        state: enabled
+      loop:
+        - 6443
+        - 2379
+        - 2380
+        - 10250
+        - 10251
+        - 10252
+        - 10255
+        - 30000-32767
+
+    - name: Run services firewalld
+      ansible.builtin.systemd_service:
+        name: firewalld
+        enabled: true
+        state: started

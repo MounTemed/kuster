@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-policy
+spec:
+  project: default
+  source:
+    path: kubernetes/
+    repoURL: "https://github.com/MounTemed/kuster"
+    targetRevision: HEAD
+    directory:
+      recurse: true
+  destination:
+    namespace: argocd
+    server: "https://kubernetes.default.svc"
+  syncPolicy:
+    automated: {}

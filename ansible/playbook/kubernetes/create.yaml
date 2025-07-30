@@ -1,0 +1,22 @@
+- name: Creating a namespace for deployment and argocd
+  hosts: servers
+  become: true
+  vars:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+    - name: Create a deployment namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        name: luneapp
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Create namespace argo
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        name: argocd
+        api_version: v1
+        kind: Namespace
+        state: present

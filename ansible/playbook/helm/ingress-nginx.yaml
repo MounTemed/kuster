@@ -1,0 +1,27 @@
+- name: Install NGINX ingress
+  hosts: servers
+  become: true
+  vars:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+    - name: Adding a new repository
+      kubernetes.core.helm_repository:
+        kubeconfig: "{{ kubeconfig }}"
+        name: ingress-nginx
+        repo_url: https://kubernetes.github.io/ingress-nginx
+
+    - name: Adding a new namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        name: ingress-nginx
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy ingress-nginx from url
+      kubernetes.core.helm:
+        kubeconfig: "{{ kubeconfig }}"
+        name: ingress-nginx
+        chart_ref: ingress-nginx/ingress-nginx
+        release_namespace: ingress-nginx
